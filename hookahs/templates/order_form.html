@@ -1,0 +1,368 @@
+{#{% extends 'base.html' %}#}
+{##}
+{#{% block content %}#}
+{#<div class="order-form-container mt-5">#}
+{#    <div class="text-center mb-4 order-container">#}
+{#        <h3>ПРАЙС-ЛИСТ</h3>#}
+{#        <br><br>#}
+{#        <div class="d-flex justify-content-between">#}
+{#            <div class="order-inf-price">#}
+{#                <div class="order-inf-price-t1">#}
+{#                    Кальян стандарт (кальяночас с кальнянным мастером с классической чашей)*#}
+{#                </div>#}
+{#                <div class="order-inf-price-t2">* В объемах от 20 кальяночасов - индивидуальные скидки</div>#}
+{#            </div>#}
+{#            <div style="width: 10%; text-align: right;">#}
+{#                <p><strong>20 евро</strong></p>#}
+{#            </div>#}
+{#        </div>#}
+{#        <hr style="border-color: #c5c5c5; width: 100%;">#}
+{#        <br>#}
+{##}
+{#        <div class="d-flex justify-content-between">#}
+{#            <div class="order-inf-price">#}
+{#                <div class="order-inf-price-t1">#}
+{#                    Премиум кальян (кальяночас с кальнянным мастером на чаше премиального качества)#}
+{#                </div>#}
+{#                <div class="order-inf-price-t2">* В объемах от 20 кальяночасов - индивидуальные скидки</div>#}
+{#            </div>#}
+{#            <div style="width: 10%; text-align: right;">#}
+{#                <p><strong>30 евро</strong></p>#}
+{#            </div>#}
+{#        </div>#}
+{#        <hr style="border-color: #c5c5c5; width: 100%;">#}
+{#        <br><br><br><br>#}
+{#    </div>#}
+{##}
+{#    <div class="table-container bg-white p-5 rounded shadow-sm mx-auto" style="max-width: 900px; border: 7px solid rgb(157,157,157);">#}
+{#        <h1 class="text-center mb-5">РАСЧЕТ СТОИМОСТИ ЗАКАЗА</h1>#}
+{#        <br>#}
+{#        <form method="post" novalidate onsubmit="showConsultantMessage(event)">#}
+{#            {% csrf_token %}#}
+{#            <div class="form-row">#}
+{#                <div class="form-group col-md-12">#}
+{#                    <label class="fs-5" for="id_standard_qty">Количество стандартных кальянов (20 евро/час):</label><br>#}
+{#                    <input type="range" class="form-control-range" id="id_standard_qty" name="standard_qty" min="0" max="20" value="{{ form.standard_qty.value|default:'0' }}" oninput="document.getElementById('standard_qty_value').innerText = this.value;">#}
+{#                    <span id="standard_qty_value">{{ form.standard_qty.value|default:'0' }}</span>#}
+{#                </div>#}
+{#                <div class="form-group col-md-12">#}
+{#                    <label class="fs-5" for="id_premium_qty">Количество премиум кальянов (30 евро/час):</label><br>#}
+{#                    <input type="range" class="form-control-range" id="id_premium_qty" name="premium_qty" min="0" max="20" value="{{ form.premium_qty.value|default:'0' }}" oninput="document.getElementById('premium_qty_value').innerText = this.value;">#}
+{#                    <span id="premium_qty_value">{{ form.premium_qty.value|default:'0' }}</span>#}
+{#                </div>#}
+{#            </div>#}
+{#            <div class="form-group">#}
+{#                <label class="fs-5" for="id_hours">Количество часов:</label><br>#}
+{#                <input type="range" class="form-control-range" id="id_hours" name="hours" min="1" max="20" value="{{ form.hours.value|default:'1' }}" oninput="document.getElementById('hours_value').innerText = this.value;">#}
+{#                <span id="hours_value">{{ form.hours.value|default:'1' }}</span>#}
+{#            </div>#}
+{#            <div class="form-group form-check">#}
+{#                <input type="checkbox" class="form-check-input" id="id_delivery" name="delivery" {% if form.delivery.value %}checked{% endif %}>#}
+{#                <label class="form-check-label fs-5" for="id_delivery">Доставка (10 евро)</label>#}
+{#            </div><br>#}
+{#            <div class="form-group fs-5 fw-bold">#}
+{#                <p>Общая стоимость: <span id="total_cost">0</span> евро</p>#}
+{#            </div>#}
+{#            <div class="form-group">#}
+{#                <label for="id_phone">Телефон:</label>#}
+{#                <input type="text" class="form-control" id="id_phone" name="phone" #}
+{#                       value="{{ form.phone.value|default:'' }}">#}
+{#            </div><br>#}
+{#            <div class="form-group">#}
+{#                <label for="id_name">ФИО:</label>#}
+{#                <input type="text" class="form-control" id="id_name" name="name" #}
+{#                       value="{{ form.name.value|default:''  }}">#}
+{#            </div><br>#}
+{#            <div class="form-group">#}
+{#                <label for="id_address">Адрес доставки:</label>#}
+{#                <input type="text" class="form-control" id="id_address" name="address" #}
+{#                       value="{{ form.address.value|default:''  }}">#}
+{#            </div><br>#}
+{#            <div class="text-center">#}
+{#                <button type="submit" class="btn btn-dark">Заказать</button>#}
+{#            </div>#}
+{#        </form>#}
+{##}
+{#        {% if form.is_bound and form.is_valid %}#}
+{#        <div class="alert alert-success mt-4">#}
+{#            <p>С вами свяжется консультант для уточнения заказа.</p>#}
+{#        </div>#}
+{#        {% endif %}#}
+{##}
+{#        {% if form.errors %}#}
+{#        <div class="alert alert-danger mt-4">#}
+{#            <p>Пожалуйста, исправьте ошибки в форме ниже:</p>#}
+{#            <ul>#}
+{#                {% for field in form %}#}
+{#                    {% for error in field.errors %}#}
+{#                        <li>{{ error }}</li>#}
+{#                    {% endfor %}#}
+{#                {% endfor %}#}
+{#                {% for error in form.non_field_errors %}#}
+{#                    <li>{{ error }}</li>#}
+{#                {% endfor %}#}
+{#            </ul>#}
+{#        </div>#}
+{#        {% endif %}#}
+{#    </div>#}
+{#</div>#}
+{##}
+{#<script>#}
+{#    const standardPrice = 20;#}
+{#    const premiumPrice = 30;#}
+{#    const deliveryPrice = 10;#}
+{#    #}
+{#    function calculateTotal() {#}
+{#        const standardQty = parseInt(document.getElementById('id_standard_qty').value) || 0;#}
+{#        const premiumQty = parseInt(document.getElementById('id_premium_qty').value) || 0;#}
+{#        const hours = parseInt(document.getElementById('id_hours').value) || 1;#}
+{#        const delivery = document.getElementById('id_delivery').checked ? deliveryPrice : 0;#}
+{##}
+{#        const total = (standardQty * standardPrice + premiumQty * premiumPrice) * hours + delivery;#}
+{#        document.getElementById('total_cost').innerText = total;#}
+{#    }#}
+{##}
+{#    document.querySelectorAll('input').forEach(input => {#}
+{#        input.addEventListener('input', calculateTotal);#}
+{#    });#}
+{##}
+{#    calculateTotal();#}
+{#    #}
+{#    function showConsultantMessage(event) {#}
+{#        event.preventDefault();  // Предотвращает отправку формы#}
+{##}
+{#        // Проверка на ошибки#}
+{#        let errors = [];#}
+{#        const phone = document.getElementById('id_phone').value.trim();#}
+{#        const name = document.getElementById('id_name').value.trim();#}
+{#        const address = document.getElementById('id_address').value.trim();#}
+{##}
+{#        if (!phone) {#}
+{#            errors.push('Телефон обязателен.');#}
+{#        }#}
+{#        if (!name) {#}
+{#            errors.push('ФИО обязательно.');#}
+{#        }#}
+{#        if (!address && document.getElementById('id_delivery').checked) {#}
+{#            errors.push('Адрес доставки обязателен при выборе доставки.');#}
+{#        }#}
+{##}
+{#        if (errors.length > 0) {#}
+{#            alert("Пожалуйста, исправьте следующие ошибки:\n" + errors.join("\n"));#}
+{#        } else {#}
+{#            alert("С вами свяжется консультант для уточнения заказа.");  // Всплывающее окно с сообщением#}
+{#            // Здесь можно отправить форму, если это необходимо#}
+{#            // event.target.submit(); // раскомментировать, если нужно отправлять форму после проверки#}
+{#        }#}
+{#    }#}
+{#</script>#}
+{#{% endblock %}#}
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="order-form-container mt-5">
+    <div class="text-center mb-4 order-container">
+        <h3>ПРАЙС-ЛИСТ</h3>
+        <br><br>
+        <div class="d-flex justify-content-between">
+            <div class="order-inf-price">
+                <div class="order-inf-price-t1">
+                    Кальян стандарт (кальяночас с кальянным мастером с классической чашей)*
+                </div>
+                <div class="order-inf-price-t2">* В объемах от 20 кальяночасов - индивидуальные скидки</div>
+            </div>
+            <div style="width: 10%; text-align: right;">
+                <p><strong>20 евро</strong></p>
+            </div>
+        </div>
+        <hr style="border-color: #c5c5c5; width: 100%;">
+        <br>
+
+        <div class="d-flex justify-content-between">
+            <div class="order-inf-price">
+                <div class="order-inf-price-t1">
+                    Премиум кальян (кальяночас с кальянным мастером на чаше премиального качества)
+                </div>
+                <div class="order-inf-price-t2">* В объемах от 20 кальяночасов - индивидуальные скидки</div>
+            </div>
+            <div style="width: 10%; text-align: right;">
+                <p><strong>30 евро</strong></p>
+            </div>
+        </div>
+        <hr style="border-color: #c5c5c5; width: 100%;">
+        <br><br><br><br>
+    </div>
+
+    <div class="table-container bg-white p-5 rounded shadow-sm mx-auto" style="max-width: 900px; border: 7px solid rgb(157,157,157);">
+        <h1 class="text-center mb-5">РАСЧЕТ СТОИМОСТИ ЗАКАЗА</h1>
+        <br>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label class="fs-5" for="id_standard_qty">Количество стандартных кальянов (20 евро/час):</label><br>
+                    <input type="range" class="form-control-range" id="id_standard_qty" name="standard_qty" min="0" max="20" value="{{ form.standard_qty.value|default:'0' }}" oninput="document.getElementById('standard_qty_value').innerText = this.value;">
+                    <span id="standard_qty_value">{{ form.standard_qty.value|default:'0' }}</span>
+                </div>
+                <div class="form-group col-md-12">
+                    <label class="fs-5" for="id_premium_qty">Количество премиум кальянов (30 евро/час):</label><br>
+                    <input type="range" class="form-control-range" id="id_premium_qty" name="premium_qty" min="0" max="20" value="{{ form.premium_qty.value|default:'0' }}" oninput="document.getElementById('premium_qty_value').innerText = this.value;">
+                    <span id="premium_qty_value">{{ form.premium_qty.value|default:'0' }}</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="fs-5" for="id_hours">Количество часов:</label><br>
+                <input type="range" class="form-control-range" id="id_hours" name="hours" min="1" max="20" value="{{ form.hours.value|default:'1' }}" oninput="document.getElementById('hours_value').innerText = this.value;">
+                <span id="hours_value">{{ form.hours.value|default:'1' }}</span>
+            </div>
+            <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="id_delivery" name="delivery" {% if form.delivery.value %}checked{% endif %}>
+                <label class="form-check-label fs-5" for="id_delivery">Доставка (10 евро)</label>
+            </div><br>
+            <div class="form-group fs-5 fw-bold">
+                <p>Общая стоимость: <span id="total_cost">0</span> евро</p>
+            </div>
+            <div class="form-group">
+                <label for="id_phone">Телефон:</label>
+                <input type="text" class="form-control {% if form.phone.errors %}is-invalid{% endif %}" id="id_phone" name="phone" value="{{ form.phone.value|default:'' }}">
+                {% for error in form.phone.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div><br>
+            <div class="form-group">
+                <label for="id_name">ФИО:</label>
+                <input type="text" class="form-control {% if form.name.errors %}is-invalid{% endif %}" id="id_name" name="name" value="{{ form.name.value|default:'' }}">
+                {% for error in form.name.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div><br>
+            <div class="form-group">
+                <label for="id_address">Адрес доставки:</label>
+                <input type="text" class="form-control {% if form.address.errors %}is-invalid{% endif %}" id="id_address" name="address" value="{{ form.address.value|default:'' }}">
+                {% for error in form.address.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div><br>
+            <div class="text-center">
+                <button type="submit" class="button-sign_in-profile red">Заказать</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для успешного заказа -->
+{% if success %}
+<div id="successModal" class="modal">
+    <div class="modal-content green-modal">
+        <span class="close">&times;</span>
+        <p>С вами свяжется консультант для уточнения заказа.</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Стили для модальных окон -->
+<style>
+    .modal {
+        display: none; /* Скрыто по умолчанию */
+        position: fixed; /* Оставаться на месте */
+        z-index: 1; /* Сидеть наверху */
+        left: 0;
+        top: 0;
+        width: 100%; /* Полная ширина */
+        height: 100%; /* Полная высота */
+        overflow: auto; /* Включить прокрутку, если это необходимо */
+        background-color: rgb(0,0,0); /* Цвет фона */
+        background-color: rgba(0,0,0,0.4); /* Черный с непрозрачностью */
+    }
+
+    .modal-content {
+        margin: 15% auto; /* 15% сверху и центрированное по горизонтали */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 40%; /* Ширина */
+        color: #000000; /* Белый цвет текста */
+    }
+
+    .red-modal {
+        background-color: #ffbcb9; /* Красный фон для ошибок */
+    }
+
+    .green-modal {
+        background-color: #b8ffbb; /* Зеленый фон для успешного сообщения */
+    }
+
+    .close {
+        color: #000000;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    const standardPrice = 20;
+    const premiumPrice = 30;
+    const deliveryPrice = 10;
+    
+    function calculateTotal() {
+        const standardQty = parseInt(document.getElementById('id_standard_qty').value) || 0;
+        const premiumQty = parseInt(document.getElementById('id_premium_qty').value) || 0;
+        const hours = parseInt(document.getElementById('id_hours').value) || 1;
+        const delivery = document.getElementById('id_delivery').checked ? deliveryPrice : 0;
+
+        const total = (standardQty * standardPrice + premiumQty * premiumPrice) * hours + delivery;
+        document.getElementById('total_cost').innerText = total;
+    }
+
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', calculateTotal);
+    });
+
+    calculateTotal();
+
+    // Показать модальное окно с успешным сообщением, если заказ был успешным
+    {% if success %}
+    const successModal = document.getElementById("successModal");
+    const successSpan = successModal.getElementsByClassName("close")[0];
+
+    successModal.style.display = "block";
+
+    // Закрытие модального окна при нажатии на X
+    successSpan.onclick = function() {
+        successModal.style.display = "none";
+    }
+
+    // Закрытие модального окна при нажатии вне его
+    window.onclick = function(event) {
+        if (event.target == successModal) {
+            successModal.style.display = "none";
+        }
+    }
+    {% endif %}
+</script>
+{% endblock %}
+
+
+

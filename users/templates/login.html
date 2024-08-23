@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="login">
+        <div class="login-1">
+            <form class="login-form" method="post">
+                <div class="name-hookanh">HOOKAH BLISS</div>
+                <div class="white-stripe"></div>
+                {% csrf_token %}
+                <div class="login-username login-username-none">
+                    <div class="login-inp">
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}
+                        <div class="error">
+                            {{ form.username.errors.as_text }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="login-password login-password-none">
+                    <div class="pass-inp">
+                        {{ form.password }}
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="error">
+                            {{ form.password.errors.as_text }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="login-errors">
+                        <div class="error">
+                            {{ form.non_field_errors.as_text }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <button class="button-sign_in" type="submit">Вход</button>
+                <p class="log-11">Еще не зарегистрированы?</p>
+                <a class="sign_in-1" href="{% url 'verification' %}">Зарегистрироваться</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

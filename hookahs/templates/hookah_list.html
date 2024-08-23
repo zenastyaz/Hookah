@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container-list d-flex">
+        <div class="filters mr-4 w-25">
+            <form method="get">
+                <div class="form-group mb-4">
+                    <label for="id_name"></label>
+                    <input type="text" name="name" id="id_name" class="form-control hook-list-filter"
+                           value="{{ request.GET.name }}" placeholder="Название товара">
+                </div>
+                <div class="form-group mb-4">
+                    <label for="id_category" class="hookah-category">Выберите категорию:</label>
+                    <select name="category" id="id_category" class="form-control hook-list-filter"
+                            onchange="toggleFlavorsField()">
+                        <option value="">---------</option>
+                        {% for category in filter.form.fields.category.queryset %}
+                            <option value="{{ category.id }}"
+                                    {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mb-4" id="flavors-field" style="display: none;">
+                    <label class="hook-list-flavor">Вкусовые ноты:</label>
+                    <div class="form-check hook-list-flavor">
+                        {% for flavor in filter.form.fields.flavors.queryset %}
+                            <input class="form-check-input hook-list-filter" type="checkbox" name="flavors"
+                                   id="flavor_{{ flavor.id }}" value="{{ flavor.id }}"
+                                   {% if flavor.id|stringformat:"s" in selected_flavors %}checked{% endif %}>
+                            <label class="form-check-label" for="flavor_{{ flavor.id }}">
+                                {{ flavor.name }}
+                            </label>
+                            <br>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-dark mt-3">Показать товары</button>
+            </form>
+        </div>
+
+        <div class="container-hook-list">
+            {% for hookah in hookah_list %}
+
+                <div class="card" style="width: 18rem;" data-href="{% url 'hookah' pk=hookah.id %}">
+                {% if request.user.is_authenticated %}
+                    <div class="star">
+                        <a href="javascript:void(0);" class="favorite-toggle" data-id="{{ hookah.pk }}">
+                            {% if request.user in hookah.my_favorites.all %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                          d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                                </svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-heart" viewBox="0 0 16 16">
+                                    <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
+                                </svg>
+                            {% endif %}
+                        </a>
+                    </div>
+                {% endif %}
+                    <div>
+                        {% if hookah.category.name == 'Табак' %}
+                            <img src="{{ hookah.image_url }}" class="card-img-top-tobacco" alt="{{ hookah.name }}"  style="width: 200px; height: 150px;">
+                        {% elif hookah.category.name == 'Кальян' %}
+                            <img src="{{ hookah.image_url }}" class="card-img-top-hookah" alt="{{ hookah.name }}">
+                        {% else %}
+                            <img src="{{ hookah.image_url }}" class="card-img-top-tobacco" alt="{{ hookah.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="card-body hook-list-body d-flex flex-column">
+                        <h5 class="hook-list-title">{{ hookah.name }}</h5>
+                        <div class="price mt-3 d-flex justify-content-between align-items-center">
+                            <p class="card-text">{{ hookah.price }} €</p>
+                            <a class="card-btn-hookah-list" href="{% url 'hookah' pk=hookah.id %}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor"
+                                     stroke="currentColor" stroke-width="1" class="bi bi-cart3" viewBox="0 0 16 16">
+                                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+
+        document.querySelectorAll('.favorite-toggle').forEach(function (element) {
+            element.addEventListener('click', function (event) {
+                var hookahId = this.getAttribute('data-id');
+                var url = '{% url "hookah-like" 0 %}'.replace('0', hookahId);
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.liked) {
+                            this.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                                      </svg>`;
+                        } else {
+                            this.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
+                                      </svg>`;
+                        }
+                    })
+                    .catch(error => console.error('Ошибка:', error));
+            });
+        });
+    </script>
+{% endblock %}
+

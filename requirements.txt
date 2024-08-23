@@ -1,0 +1,7 @@
+Django==5.0.7
+python-dotenv==1.0.1
+psycopg2==2.9.9
+django-filter==24.2
+redis==5.0.8
+stripe==10.6.0
+

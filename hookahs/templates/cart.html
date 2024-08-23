@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-cart">
+    <div class="cont-cart">
+        {% if object_list %}
+        <ul class="cont-item">
+            {% for item in object_list %}
+            <li class="item w-100" data-item-id="{{ item.pk }}">
+                <img src="{{ item.hookah.image_url }}" alt="{{ item.hookah.name }}" style="max-width: 200px; max-height: 200px;">
+                <div class="cart-item w-100">
+                    <div class="cart-item-name">{{ item.hookah.name }}</div>
+                    <div class="cart-item-description">{{ item.hookah.description }}</div>
+                    <form method="post" action="{% url 'remove-cart' item.pk %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-sm card-btn-del" aria-label="Удалить">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                                <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                            </svg>
+                        </button>
+                    </form>
+                    <div class="cart-item-quantity">
+                        <div class="input-group">
+                            <button class="btn-sm btn-subtract btn-subtract-add" data-action="subtract" style="border-radius: 0.2rem;">-</button>
+                            <input type="text" class="form-control cart-change number" value="{{ item.quantity }}" readonly>
+                            <button class="btn-sm btn-add btn-subtract-add" data-action="add" style="border-radius: 0.2rem;">+</button>
+                            <div class="cart-item-total-price" data-unit-price="{{ item.hookah.price }}">Цена: {{ item.total_price }}€</div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <div class="cart-strip"></div>
+            {% endfor %}
+        </ul>
+        <div class="total-cost">Общая стоимость: {{ total_cost }}€</div>
+        <div style="text-align: center; margin: 1em; padding: 1rem;">
+            <button id="checkout-btn" class="button-sign_in-profile">Оформить заказ</button>
+        </div>
+        
+        {% else %}
+        <p style="background: #000; color: #c5c5c5">Ваша корзина пуста.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Модальное окно Bootstrap -->
+<div class="modal fade" id="missingItemsModal" tabindex="-1" aria-labelledby="missingItemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="missingItemsModalLabel">Внимание!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы не добавили в корзину следующие товары:</p>
+                <ul>
+                    {% if not has_hookah %}
+                    <li>Кальян</li>
+                    {% endif %}
+                    {% if not has_tobacco %}
+                    <li>Табак</li>
+                    {% endif %}
+                </ul>
+                <p>Пожалуйста, добавьте необходимые товары в корзину или подтвердите, что они вам не нужны.</p>
+                <form method="post" action="{% url 'proceed_without_items' %}">
+                    {% csrf_token %}
+                    {% if not has_hookah %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="noNeedHookah" name="no_need_hookah" required>
+                        <label class="form-check-label" for="noNeedHookah">Мне не нужен кальян</label>
+                    </div>
+                    {% endif %}
+                    {% if not has_tobacco %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="noNeedTobacco" name="no_need_tobacco" required>
+                        <label class="form-check-label" for="noNeedTobacco">Мне не нужен табак</label>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="button-sign_in-profile">Продолжить без этих товаров</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+    // Обработка кнопок добавления и вычитания
+    $('.btn-add, .btn-subtract').click(function(e) {
+        e.preventDefault();
+        
+        let button = $(this);
+        let itemId = button.closest('li').data('item-id');
+        let action = button.data('action');
+
+        $.ajax({
+            url: "{% url 'change-cart' 0 %}".replace('0', itemId),
+            method: "POST",
+            data: {
+                action: action,
+                csrfmiddlewaretoken: "{{ csrf_token }}"
+            },
+            success: function(response) {
+                console.log('Response:', response); // Для отладки
+                let quantitySpan = button.closest('.cart-item-quantity').find('.item-quantity');
+                let quantityInput = button.siblings('.cart-change'); // input-элемент
+                let itemPriceDiv = button.closest('.cart-item').find('.cart-item-total-price');
+                let totalCostDiv = $('.total-cost'); // Убедитесь, что это корректный селектор
+
+                if (response.quantity === 0) {
+                    // Удаляем товар из списка, если его количество стало 0
+                    button.closest('li').remove();
+                } else {
+                    quantitySpan.text(response.quantity); // Обновляем текст с количеством
+                    quantityInput.val(response.quantity); // Обновляем input с количеством
+                    let unitPrice = parseFloat(itemPriceDiv.data('unit-price')); // цена за единицу
+                    itemPriceDiv.text('Цена: ' + (unitPrice * response.quantity).toFixed(2) + '€'); // обновляем цену
+                }
+
+                // Убедитесь, что обновляем общую стоимость
+                if (typeof response.total_cost === 'number') {
+                    totalCostDiv.text('Общая стоимость: ' + response.total_cost.toFixed(2) + '€');
+                } else {
+                    console.error('Total cost is not a number:', response.total_cost);
+                }
+            },
+            error: function(xhr) {
+                alert('Ошибка: ' + xhr.responseText);
+            }
+        });
+    });
+
+
+        // Модальное окно Bootstrap
+        document.getElementById('checkout-btn').addEventListener('click', function (event) {
+            let missingCategories = [];
+
+            // Проверяем, какие категории отсутствуют
+            {% if not has_hookah %}
+                missingCategories.push('Кальян');
+            {% endif %}
+            {% if not has_tobacco %}
+                missingCategories.push('Табак');
+            {% endif %}
+
+            if (missingCategories.length > 0) {
+                event.preventDefault(); // Останавливаем переход по ссылке
+                var modal = new bootstrap.Modal(document.getElementById('missingItemsModal'), {});
+                modal.show();
+            } else {
+                // Если все элементы присутствуют, перенаправляем на страницу оформления заказа
+                window.location.href = '{% url "checkout" %}';
+            }
+        });
+    });
+</script>
+    
+{% endblock %}
+

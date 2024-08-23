@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hookah</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script type="module" src="/static/js/script.js" defer></script>
+</head>
+
+<body>
+<div class="link-1">
+    <a class="nav-link" href="{% url 'services' %}">УСЛУГИ</a>
+</div>
+<div class="footer">
+    <div class="link-2">
+        <a class="nav-link" href="{% url 'contact' %}">КОНТАКТ</a>
+        <a class="nav-link" href="{% url 'about' %}">О НАС</a>
+    </div>
+    <div class="link-3">
+        <a class="nav-link" href="{% url 'delivery' %}">ДОСТАВКА</a>
+        <a class="nav-link" href="{% url 'terms' %}">УСЛОВИЯ</a>
+    </div>
+</div>
+<canvas></canvas>
+<h1 id="h1">Hookah Bliss</h1>
+</body>

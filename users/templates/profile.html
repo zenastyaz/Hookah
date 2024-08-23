@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="update-1">
+        <div class="update">
+            <form method="post">
+                <div class="image-logo-login"></div>
+                <div class="name-hookanh">HOOKAH BLISS</div>
+                <div class="white-stripe-profile"></div>
+                {% csrf_token %}
+                <div class="update-profile">
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="error">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="update-profile">
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="error">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+                <button class="button-sign_in-profile" type="submit">Сохранить</button>
+            </form>
+        
+            <button type="button" class="btn btn-dark mt-3" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                Добавить адрес
+            </button>
+        
+            <button type="button" class="btn btn-dark mt-3" data-bs-toggle="modal" data-bs-target="#viewAddressesModal">
+                Посмотреть адреса
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для добавления адреса -->
+    <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAddressModalLabel">Добавить адрес</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <form action="{% url 'add_address' %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="first_name">Имя:</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Имя" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last_name">Фамилия:</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Фамилия" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Телефон:</label>
+                            <input type="text" class="form-control" id="phone" name="phone" placeholder="+357xxxxxxxx" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="address">Адрес:</label>
+                            <input type="text" class="form-control" id="address" name="address" placeholder="Адрес" required>
+                        </div>
+                        <button type="submit" class="button-sign_in-profile">Добавить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для просмотра адресов -->
+    <div class="modal fade" id="viewAddressesModal" tabindex="-1" aria-labelledby="viewAddressesModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewAddressesModalLabel">Ваши адреса</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% for address in request.user.addresses.all %}
+                        <li class="list-group-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div>{{ address.first_name }} {{ address.last_name }} - {{ address.phone }}</div>
+                                    <div>{{ address.address }}</div>
+                                </div>
+                                <form action="{% url 'delete_address' address.id %}" method="post" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm mt-2">
+                                        Удалить
+                                    </button>
+                                </form>
+                            </div>
+                            {% if not forloop.last %}
+                            <hr class="my-3">
+                            {% endif %}
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">Адреса не найдены.</li>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+

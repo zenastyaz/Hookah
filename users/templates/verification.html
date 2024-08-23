@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="regist-1">
+    <div class="regist">
+        <form method="post" id="verification-form">
+            <div class="image-logo-login"></div>
+            <div class="name-hookanh">HOOKAH BLISS</div>
+            <div class="white-stripe"></div>
+            {% csrf_token %}
+            <div class="login-username login-username-none">
+                <div class="registration">
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="error" >{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+                <button type="button" class="button-verification" id="send-code-button">Отправить код</button>
+                <div class="registration">
+                    {{ form.verification_code }}
+                    {% if form.verification_code.errors %}
+                        <div class="error">{{ form.verification_code.errors }}</div>
+                    {% endif %}
+                </div>
+                <button class="button-verification" type="submit">Проверить код</button>
+            </div>
+        </form>
+    </div>
+</div>
+    <script>
+        const sendVerificationCodeUrl = "{% url 'send_verification_code' %}";
+        const csrfToken = "{{ csrf_token }}";
+    </script>
+{% endblock %}

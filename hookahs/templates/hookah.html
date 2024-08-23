@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container-det">
+        <div class="hookah-item">
+            <img src="{{ hookah.image_url }}" class="det-img" alt="{{ hookah.name }}"
+                 style="width: 350px; height: 350px">
+            <div class="det-text">
+                <div class="hookah-name">{{ hookah.name }}</div>
+                <div class="hookah-desc">Описание:</div>
+                <div class="hookah-description">{{ hookah.description }}</div>
+                {% if request.user.is_authenticated %}
+                <div class="date-time">
+                    <div class="date">
+                        <form method="get" id="date-form">
+                            <label for="booking_date"></label>
+                            <input type="date" id="booking_date" name="booking_date" required 
+                                   value="{{ request.GET.booking_date|default_if_none:''|date:'Y-m-d' }}"
+                                   min="2024-08-01" max="2025-12-31">
+                            <span id="error-message" style="color: #7a2020; display: none;">Пожалуйста, выберите дату между 01.08.2024 и 31.12.2025</span>
+                            <button type="button" class="button-sign_in-profile hookah" onclick="saveAndSubmitDate()">Проверить</button>
+                        </form>
+                    </div>
+
+                    {% if available_times %}
+                        <form method="post" action="{% url 'add-cart' hookah.pk %}">
+                            {% csrf_token %}
+                            <div class="time">
+                                <input type="hidden" name="booking_date" value="{{ request.GET.booking_date }}">
+                                <label for="booking_time"></label>
+                                <select id="booking_time" name="booking_time" required>
+                                    {% for time in available_times %}
+                                        <option value="{{ time|date:'H:i' }}">{{ time|date:'H:i' }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="hookah-button">
+                                <button class="hookah-button-cart" type="submit">В КОРЗИНУ</button>
+                            </div>
+
+                        </form>
+                    {% else %}
+                        <p>Пожалуйста, выберите дату, чтобы увидеть доступное время.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+    function saveAndSubmitDate() {
+        let bookingDateInput = document.getElementById('booking_date');
+        let errorMessage = document.getElementById('error-message');
+        let minDate = new Date(bookingDateInput.min);
+        let maxDate = new Date(bookingDateInput.max);
+        let selectedDate = new Date(bookingDateInput.value);
+
+        if (selectedDate >= minDate && selectedDate <= maxDate) {
+            errorMessage.style.display = 'none'; // Скрываем сообщение об ошибке
+            if (bookingDateInput.value) {
+                localStorage.setItem('selectedDate', bookingDateInput.value);
+            }
+            document.getElementById('date-form').submit();
+        } else {
+            errorMessage.style.display = 'block'; // Показываем сообщение об ошибке
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        let bookingDateInput = document.getElementById('booking_date');
+        let savedDate = localStorage.getItem('selectedDate');
+
+        if (bookingDateInput) {
+            if (savedDate) {
+                bookingDateInput.value = savedDate;
+                localStorage.removeItem('selectedDate');
+            }
+        }
+    });
+    </script>
+{% endblock %}

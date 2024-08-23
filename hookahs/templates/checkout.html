@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container-checkout {
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+        }
+    </style>
+
+
+    <div class="container-checkout">
+        <div class="container">
+            <!-- Адрес доставки и общая стоимость -->
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Адрес доставки -->
+                    <div class="p-3 mb-4 checkout-bg-blok rounded">
+                        <div class="d-flex justify-content-between">
+                            <h2 class="mb-4 checkout-text-blok">Адрес доставки</h2>
+                            <button type="button" class="btn btn-link btn-checkout-change" data-toggle="modal"
+                                    data-target="#addressModal">Изменить
+                            </button>
+                        </div>
+                        <h5 id="selected-address-name"
+                            class="mb-1 checkout-text-blok">
+                            {{ addresses.first.first_name }} {{ addresses.first.last_name }}
+                        </h5>
+                        <small id="selected-address-phone"
+                               class="checkout-text-blok">{{ addresses.first.phone }}</small><br>
+                        <small id="selected-address-details"
+                               class="checkout-text-blok">{{ addresses.first.address }}</small><br>
+                        <small class="checkout-text-blok">{{ request.user.email }}</small><br>
+                    </div>
+                    <!-- Скрытое поле для выбранного address_id -->
+                    <input type="hidden" id="selected-address-id" name="address_id" value="{{ addresses.first.id }}">
+
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Общая стоимость -->
+                    <div class="p-3 mb-4 rounded checkout-bg-blok" style="line-height: 0.7;">
+                        <h2 class="mb-3 checkout-text-blok">Стоимость</h2>
+                        <p class="checkout-text-blok">Стоимость заказа: <span id="order-price">{{ total_price }}</span>
+                            €</p>
+                        <p class="checkout-text-blok">Стоимость доставки: <span id="delivery-cost">
+                                {% if delivery_option == 'delivery' %}
+                                    10
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </span> €</p>
+                        <p class="checkout-text-blok">Кальянный мастер: <span id="hookah-master-cost">0</span> €</p>
+                        <p class="checkout-text-blok mt-4"><strong>Итого: <span
+                                id="total-price">{{ total_price }}</span>
+                            €</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Детали заказа и ВЫБЕРИТЕ ВАРИАНТЫ ДОСТАВКИ (занимает 2 строки) и правая часть -->
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Детали заказа -->
+                    <div class="p-3 mb-4 checkout-bg-blok rounded">
+                        <h2 class="mb-4 checkout-text-blok">Детали заказа</h2>
+                        {% if object_list %}
+                            <ul class="list-group mb-3 checkout-item-blok">
+                                {% for cart_item in object_list %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="mb-1 checkout-text-blok">{{ cart_item.hookah.name }}</h5>
+                                            <small class="checkout-text-blok">Цена: {{ cart_item.hookah.price }}
+                                                руб.</small><br>
+                                            <small class="checkout-text-blok">Количество: {{ cart_item.quantity }}</small><br>
+                                            <small class="checkout-text-blok">Общая
+                                                стоимость: {{ cart_item.total_price }} руб.</small>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="checkout-text-blok">Ваша корзина пуста.</p>
+                        {% endif %}
+
+
+                        <!-- ВЫБЕРИТЕ ВАРИАНТЫ ДОСТАВКИ -->
+
+                        <h5 class="mb-4 checkout-text-blok">ВЫБЕРИТЕ ВАРИАНТЫ ДОСТАВКИ</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_option" id="delivery"
+                                   value="delivery">
+                            <label class="form-check-label checkout-text-blok" for="delivery">
+                                Доставка (10€)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_option" id="pickup"
+                                   value="pickup" checked>
+                            <label class="form-check-label checkout-text-blok" for="pickup">
+                                Самовывоз
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая часть: Количество человек и Номер карты -->
+                <div class="col-md-4">
+                    <form id="payment-form">
+                        {% csrf_token %}
+                        <div class="p-3 mb-4 checkout-bg-blok rounded">
+                            <div class="form-group">
+                                <label for="people" class="checkout-text-blok">Количество человек</label>
+                                <input type="number" class="form-control" id="people" name="people" value="1" min="1"
+                                       style="background-color: #2e2e2e; border: solid #3e3e3e; color: #9e9e9e"
+                                       required>
+                                <small class="form-text" style="color: rgba(255, 0, 0, 0.2)">Каждому человеку будет
+                                    предоставлен бесплатный мундштук.</small>
+                            </div>
+
+                            <div class="form-check mt-3">
+                                <input type="checkbox" class="form-check-input" id="hookahMaster" name="hookahMaster">
+                                <label class="form-check-label checkout-text-blok" for="hookahMaster">Мне нужны услуги
+                                    кальянного мастера(10€)</label>
+                            </div>
+                        </div>
+
+                        {% if object_list %}
+                            <div class="p-3 mb-4 checkout-bg-blok rounded">
+                                    <div class="form-group">
+                                        <label for="card-number" class="checkout-text-blok">Номер карты</label>
+                                        <div id="card-number" class="text-input-cart form-control mb-3"
+                                             style="background-color: #2e2e2e; border: solid #3e3e3e;"></div>
+                                    </div>
+                                    <div class="form-row d-flex justify-content-between">
+                                        <div class="col-md-4">
+                                            {#                                            <label for="card-expiry" class="checkout-text-blok">MM/YY</label>#}
+                                            <div id="card-expiry" class="form-control"
+                                                 style="background-color: #2e2e2e; border: solid #3e3e3e;"></div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            {#                                            <label for="card-cvc" class="checkout-text-blok">CVC</label>#}
+                                            <div id="card-cvc" class="form-control"
+                                                 style="background-color: #2e2e2e; border: solid #3e3e3e;"></div>
+                                        </div>
+                                    </div>
+                                    <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+
+                                    <button type="submit" class="button-sign_in-profile mt-3">Оплатить</button>
+                                    <div id="payment-result" class="alert mt-3" style="display: none;"></div>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно выбора адреса -->
+    <div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-labelledby="addressModalLabel"
+         aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addressModalLabel">Выберите адрес доставки</h5>
+            </div>
+            <div class="modal-body">
+                {% if addresses %}
+                    <ul class="list-group">
+                        {% for address in addresses %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5>{{ address.first_name }} {{ address.last_name }}</h5>
+                                    <small>{{ address.phone }}</small><br>
+                                    <small>{{ address.address }}</small>
+                                </div>
+                                <button type="button" class="btn btn-dark select-address-btn"
+                                        data-address-id="{{ address.id }}">Выбрать
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-dark">Нет доступных адресов.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                <a href="{% url 'profile' %}" class="btn btn-secondary">Добавить адрес</a>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <!-- Подключение Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+    {#ОБРАБОТКА ОПЛАТЫ#}
+        document.addEventListener('DOMContentLoaded', function () {
+            var stripe = Stripe('{{ stripe_publishable_key }}');
+            var elements = stripe.elements();
+
+            var style = {
+                base: {
+                    color: '#9e9e9e', // Цвет текста
+                },
+            };
+
+            var cardNumber = elements.create('cardNumber', {style: style});
+            cardNumber.mount('#card-number');
+
+            var cardExpiry = elements.create('cardExpiry', {style: style});
+            cardExpiry.mount('#card-expiry');
+
+            var cardCvc = elements.create('cardCvc', {style: style});
+            cardCvc.mount('#card-cvc');
+
+            var form = document.getElementById('payment-form');
+            // Рассчитайте итоговую сумму на основе ваших входных данных
+            let baseAmount = parseFloat(document.getElementById('order-price').innerText);
+            let deliveryCost = document.querySelector('input[name="delivery_option"]:checked').value === 'delivery' ? 10 : 0;
+            let hookahMasterCost = document.getElementById('hookahMaster').checked ? 10 : 0;
+            let totalAmount = baseAmount + deliveryCost + hookahMasterCost;
+            
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                
+                // Проверка данных перед отправкой
+                const addressId = document.getElementById('selected-address-id').value;
+                const people = document.getElementById('people').value;
+            
+                if (!addressId || !people) {
+                    alert("Пожалуйста, выберите адрес и заполните все поля.");
+                    return;
+                }
+                    
+                stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardNumber,
+                }).then(function (result) {
+                    if (result.error) {
+                        var errorElement = document.getElementById('card-errors');
+                        errorElement.textContent = result.error.message;
+                    } else {
+                        fetch('/hookah/payment/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({
+                                payment_method_id: result.paymentMethod.id,
+                                amount: totalAmount,  // Здесь передаем вычисленную сумму
+                                address_id: document.getElementById('selected-address-id').value,
+                                people: document.getElementById('people').value,
+                                hookahMaster: document.getElementById('hookahMaster').checked,
+                                delivery_option: document.querySelector('input[name="delivery_option"]:checked').value
+                            }),
+                        }).then(function (response) {
+                            return response.json();
+                        }).then(function (paymentIntentResponse) {
+                            var resultElement = document.getElementById('payment-result');
+                            if (paymentIntentResponse.error) {
+                                resultElement.textContent = paymentIntentResponse.error;
+                                resultElement.classList.add('alert-danger');
+                            } else {
+                                resultElement.textContent = 'Оплата успешна!';
+                                resultElement.classList.add('alert-success');
+                                setTimeout(function() {
+                                    window.location.href = '/';
+                                }, 10000);
+                            }
+                            resultElement.style.display = 'block';
+                        }).catch(function (error) {
+                            var resultElement = document.getElementById('payment-result');
+                            resultElement.textContent = 'Ошибка при обработке оплаты. Пожалуйста, попробуйте снова.';
+                            resultElement.classList.add('alert-danger');
+                            resultElement.style.display = 'block';
+                        });
+                    }
+                });
+            });
+        });
+        
+        {#ИЗМЕНЕНИЕ АДРЕСА#}
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAddressBtns = document.querySelectorAll('.select-address-btn');
+
+            selectAddressBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const addressId = this.getAttribute('data-address-id');
+                    const addressName = this.closest('.list-group-item').querySelector('h5').innerText;
+                    const addressPhone = this.closest('.list-group-item').querySelectorAll('small')[0].innerText;
+                    const addressDetails = this.closest('.list-group-item').querySelectorAll('small')[1].innerText;
+
+                    // Обновление скрытого поля и текстовых элементов
+                    const selectedAddressIdElement = document.getElementById('selected-address-id');
+                    const selectedAddressNameElement = document.getElementById('selected-address-name');
+                    const selectedAddressPhoneElement = document.getElementById('selected-address-phone');
+                    const selectedAddressDetailsElement = document.getElementById('selected-address-details');
+
+                    if (selectedAddressIdElement && selectedAddressNameElement && selectedAddressPhoneElement && selectedAddressDetailsElement) {
+                        selectedAddressIdElement.value = addressId;
+                        selectedAddressNameElement.innerText = addressName;
+                        selectedAddressPhoneElement.innerText = addressPhone;
+                        selectedAddressDetailsElement.innerText = addressDetails;
+                    } else {
+                        console.error('Не удалось найти элементы для обновления адреса');
+                    }
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const deliveryOptionRadios = document.querySelectorAll('input[name="delivery_option"]');
+            const hookahMasterCheckbox = document.getElementById('hookahMaster');
+            const deliveryCostElement = document.getElementById('delivery-cost');
+            const hookahMasterCostElement = document.getElementById('hookah-master-cost');
+            const orderPriceElement = document.getElementById('order-price');
+            const totalPriceElement = document.getElementById('total-price');
+
+            const initialOrderPrice = parseFloat(orderPriceElement.innerText); // начальная стоимость заказа
+
+            function updateTotalPrice() {
+                let deliveryCost = parseFloat(deliveryCostElement.innerText);
+                let hookahMasterCost = hookahMasterCheckbox.checked ? 10 : 0;
+
+                // Обновление стоимости кальянного мастера
+                hookahMasterCostElement.innerText = hookahMasterCost;
+
+                // Обновление итоговой стоимости
+                const newTotalPrice = initialOrderPrice + deliveryCost + hookahMasterCost;
+                totalPriceElement.innerText = newTotalPrice.toFixed(2);
+            }
+
+            // Событие для изменения опции доставки
+            deliveryOptionRadios.forEach(radio => {
+                radio.addEventListener('change', function () {
+                    let deliveryCost = this.value === 'delivery' ? 10 : 0;
+
+                    // Обновление стоимости доставки
+                    deliveryCostElement.innerText = deliveryCost;
+
+                    // Обновление итоговой стоимости
+                    updateTotalPrice();
+                });
+            });
+
+            // Событие для изменения состояния кальянного мастера
+            hookahMasterCheckbox.addEventListener('change', function () {
+                updateTotalPrice();
+            });
+        });
+    </script>
+{% endblock %}
+
+
